@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Abo Elsheikh — Flutter Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root {
+  /* Dark theme */
+  --bg:        #060610;
+  --bg2:       #0c0c1e;
+  --bg3:       #111128;
+  --surface:   rgba(255,255,255,0.04);
+  --surface2:  rgba(255,255,255,0.07);
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.14);
+  --text:      #f0f0fa;
+  --text2:     #a0a0c0;
+  --text3:     #60607a;
+
+  /* Accents — teal/emerald + orange spark */
+  --teal:      #00d4b8;
+  --teal2:     #00b89e;
+  --teal-dim:  rgba(0,212,184,0.10);
+  --teal-dim2: rgba(0,212,184,0.18);
+  --orange:    #ff6b35;
+  --orange-dim:rgba(255,107,53,0.12);
+  --violet:    #7c5cfc;
+  --violet-dim:rgba(124,92,252,0.12);
+
+  --glow-t:    0 0 40px rgba(0,212,184,0.25), 0 0 80px rgba(0,212,184,0.1);
+  --glow-o:    0 0 40px rgba(255,107,53,0.3);
+
+  --ease:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease2:     cubic-bezier(0.23, 1, 0.32, 1);
+  --r:         14px;
+  --r2:        22px;
+}
+[data-theme="light"] {
+  --bg:       #f4f4f8;
+  --bg2:      #eaeaf0;
+  --bg3:      #e2e2ec;
+  --surface:  rgba(0,0,0,0.04);
+  --surface2: rgba(0,0,0,0.07);
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.14);
+  --text:     #12121e;
+  --text2:    #44445a;
+  --text3:    #88889a;
+}
+
+/* ══════════════════════════════════════════
+   RESET
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  line-height:1.7;
+  overflow-x:hidden;
+  cursor:none;
+  transition:background 0.4s,color 0.4s;
+}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+button{cursor:none;border:none;background:none;font:inherit;color:inherit;}
+
+/* ══════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════ */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--teal);border-radius:3px;}
+
+/* ══════════════════════════════════════════
+   SCROLL PROGRESS
+══════════════════════════════════════════ */
+#scroll-progress{
+  position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--teal),var(--orange));
+  z-index:9999;width:0%;
+  transition:width 0.1s linear;
+  box-shadow:0 0 10px var(--teal);
+}
+
+/* ══════════════════════════════════════════
+   CURSOR
+══════════════════════════════════════════ */
+#cur-ring{
+  position:fixed;width:36px;height:36px;
+  border:1.5px solid rgba(0,212,184,0.5);
+  border-radius:50%;pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:width 0.3s var(--ease),height 0.3s var(--ease),
+             border-color 0.3s,background 0.3s;
+  will-change:left,top;
+}
+#cur-dot{
+  position:fixed;width:5px;height:5px;
+  background:var(--teal);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 8px var(--teal);
+}
+.cursor-hover #cur-ring{
+  width:55px;height:55px;
+  border-color:var(--teal);
+  background:rgba(0,212,184,0.06);
+}
+
+/* ══════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════ */
+#loader{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:10000;
+  transition:opacity 0.6s var(--ease),transform 0.6s var(--ease);
+}
+#loader.hide{opacity:0;transform:scale(1.04);pointer-events:none;}
+.loader-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.5rem;font-weight:700;
+  color:var(--teal);
+  animation:logoPulse 1.2s ease-in-out infinite alternate;
+  margin-bottom:2rem;
+}
+@keyframes logoPulse{from{opacity:0.4;}to{opacity:1;text-shadow:0 0 20px var(--teal);}}
+.loader-bar-track{
+  width:200px;height:2px;
+  background:var(--border);border-radius:2px;overflow:hidden;
+}
+.loader-bar-fill{
+  height:100%;background:linear-gradient(90deg,var(--teal),var(--orange));
+  border-radius:2px;width:0%;
+  animation:loadBar 1.8s var(--ease) forwards;
+}
+@keyframes loadBar{to{width:100%;}}
+
+/* ══════════════════════════════════════════
+   NOISE
+══════════════════════════════════════════ */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.35;
+}
+
+/* ══════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 5vw;
+  background:transparent;
+  backdrop-filter:blur(0px);
+  border-bottom:1px solid transparent;
+  transition:background 0.5s,backdrop-filter 0.5s,border-color 0.5s,padding 0.4s;
+}
+nav.solid{
+  background:rgba(6,6,16,0.85);
+  backdrop-filter:blur(28px);
+  border-color:var(--border);
+  padding:0.9rem 5vw;
+}
+[data-theme="light"] nav.solid{background:rgba(244,244,248,0.88);}
+.nav-brand{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;font-size:1.1rem;
+  color:var(--teal);
+  letter-spacing:-0.02em;
+  position:relative;
+}
+.nav-brand::after{
+  content:'_';animation:blink 1s step-end infinite;color:var(--orange);
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.nav-links{display:flex;gap:2rem;list-style:none;align-items:center;}
+.nav-links a{
+  font-size:0.82rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--text2);
+  position:relative;transition:color 0.3s;
+}
+.nav-links a:hover{color:var(--text);}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;
+  background:var(--teal);transform:scaleX(0);transform-origin:left;
+  transition:transform 0.3s var(--ease);
+}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-right{display:flex;gap:0.75rem;align-items:center;}
+.theme-toggle{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border2);
+  font-size:1rem;transition:all 0.3s;cursor:none;
+}
+.theme-toggle:hover{border-color:var(--teal);color:var(--teal);}
+.nav-cta{
+  padding:0.55rem 1.4rem;border-radius:100px;
+  font-size:0.8rem;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;
+  background:var(--teal);color:#050510;
+  transition:transform 0.3s var(--ease),box-shadow 0.3s,opacity 0.3s;
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:var(--glow-t);opacity:0.9;}
+.hamburger{
+  display:none;flex-direction:column;gap:5px;
+  width:26px;cursor:none;
+}
+.hamburger span{height:2px;background:var(--text);border-radius:2px;transition:all 0.4s var(--ease);}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;width:0;}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+.mob-menu{
+  display:none;position:fixed;inset:0;
+  background:rgba(6,6,16,0.97);backdrop-filter:blur(30px);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:2rem;z-index:490;opacity:0;pointer-events:none;
+  transition:opacity 0.4s;
+}
+.mob-menu.open{opacity:1;pointer-events:all;}
+.mob-menu a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:2rem;font-weight:700;
+  color:var(--text2);transition:color 0.3s;
+}
+.mob-menu a:hover{color:var(--teal);}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+#hero{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;
+  padding:6rem 5vw 4rem;overflow:hidden;
+}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+.hero-grid-lines{
+  position:absolute;inset:0;z-index:0;overflow:hidden;
+  opacity:0.06;
+  background-image:
+    linear-gradient(rgba(0,212,184,1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,184,1) 1px,transparent 1px);
+  background-size:80px 80px;
+  mask-image:radial-gradient(ellipse 80% 70% at 60% 50%,#000 0%,transparent 100%);
+}
+.hero-glow-1{
+  position:absolute;width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,184,0.12) 0%,transparent 70%);
+  top:-200px;right:-200px;pointer-events:none;
+  animation:glow1 10s ease-in-out infinite alternate;
+}
+.hero-glow-2{
+  position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,53,0.1) 0%,transparent 70%);
+  bottom:-100px;left:-50px;pointer-events:none;
+  animation:glow1 8s 3s ease-in-out infinite alternate;
+}
+@keyframes glow1{
+  from{transform:translate(0,0) scale(1);}
+  to{transform:translate(40px,-30px) scale(1.1);}
+}
+
+.hero-content{position:relative;z-index:2;max-width:780px;}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  background:var(--teal-dim2);border:1px solid rgba(0,212,184,0.25);
+  padding:0.4rem 1rem;border-radius:100px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;font-weight:500;color:var(--teal);
+  margin-bottom:1.75rem;
+  opacity:0;animation:fadeUp 0.7s 0.3s var(--ease) forwards;
+}
+.chip-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#22c55e;box-shadow:0 0 8px #22c55e;
+  animation:dotPulse 2s infinite;
+}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+.hero-name{
+  font-size:clamp(3rem,9vw,7rem);
+  font-weight:800;line-height:0.95;
+  letter-spacing:-0.04em;
+  margin-bottom:1.25rem;
+  opacity:0;animation:fadeUp 0.8s 0.45s var(--ease) forwards;
+}
+.hero-name .word-1{
+  display:block;color:var(--text);
+}
+.hero-name .word-2{
+  display:block;
+  background:linear-gradient(135deg,var(--teal) 0%,var(--orange) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:gradMove 5s ease-in-out infinite alternate;
+  background-size:200%;
+}
+@keyframes gradMove{from{background-position:0%}to{background-position:100%}}
+
+.hero-typing-row{
+  display:flex;align-items:center;gap:0.6rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(0.95rem,2.2vw,1.2rem);
+  color:var(--text2);
+  margin-bottom:1.5rem;
+  opacity:0;animation:fadeUp 0.8s 0.6s var(--ease) forwards;
+}
+.typing-prompt{color:var(--teal);font-weight:600;}
+#hero-type{color:var(--text);border-right:2px solid var(--teal);padding-right:3px;animation:blink 0.9s step-end infinite;}
+
+.hero-tagline{
+  font-size:clamp(0.95rem,1.8vw,1.1rem);
+  font-weight:400;color:var(--text2);
+  max-width:500px;line-height:1.85;
+  margin-bottom:2.75rem;
+  opacity:0;animation:fadeUp 0.8s 0.75s var(--ease) forwards;
+}
+.hero-actions{
+  display:flex;gap:1rem;flex-wrap:wrap;
+  opacity:0;animation:fadeUp 0.8s 0.9s var(--ease) forwards;
+}
+.btn-fill{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.9rem 2rem;border-radius:100px;
+  font-weight:700;font-size:0.9rem;letter-spacing:0.04em;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  color:#050510;
+  transition:transform 0.3s var(--ease),box-shadow 0.3s;
+  position:relative;overflow:hidden;
+}
+.btn-fill::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--orange),#ff4500);
+  opacity:0;transition:opacity 0.4s;
+}
+.btn-fill:hover{transform:translateY(-3px);box-shadow:var(--glow-t);}
+.btn-fill:hover::after{opacity:1;}
+.btn-fill span,.btn-fill svg{position:relative;z-index:1;}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.9rem 2rem;border-radius:100px;
+  font-weight:600;font-size:0.9rem;
+  border:1px solid var(--border2);
+  background:var(--surface);backdrop-filter:blur(10px);
+  transition:border-color 0.3s,background 0.3s,transform 0.3s var(--ease),box-shadow 0.3s;
+}
+.btn-outline:hover{
+  border-color:var(--teal);background:var(--teal-dim);
+  transform:translateY(-3px);box-shadow:var(--glow-t);
+}
+.btn-cv{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.9rem 1.75rem;border-radius:100px;
+  font-weight:600;font-size:0.9rem;
+  border:1px solid rgba(255,107,53,0.3);
+  background:var(--orange-dim);color:var(--orange);
+  transition:all 0.3s var(--ease);
+}
+.btn-cv:hover{border-color:var(--orange);box-shadow:var(--glow-o);transform:translateY(-3px);}
+
+/* Floating tech pills */
+.float-pills{
+  position:absolute;right:5vw;top:50%;
+  transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:1rem;
+  z-index:2;
+  opacity:0;animation:fadeLeft 0.9s 1.2s var(--ease) forwards;
+}
+.float-pill{
+  display:flex;align-items:center;gap:0.7rem;
+  background:rgba(12,12,30,0.75);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border2);
+  border-radius:50px;padding:0.6rem 1.1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;font-weight:500;
+  color:var(--text2);
+  animation:pillFloat 4s ease-in-out infinite alternate;
+}
+.float-pill:nth-child(2){animation-delay:-1s;}
+.float-pill:nth-child(3){animation-delay:-2s;}
+.float-pill:nth-child(4){animation-delay:-1.5s;}
+.float-pill:nth-child(5){animation-delay:-0.5s;}
+@keyframes pillFloat{from{transform:translateX(0);}to{transform:translateX(-8px)}}
+.pill-icon{font-size:1.1rem;}
+
+/* Scroll cue */
+.scroll-cue{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+  z-index:2;opacity:0;animation:fadeUp 1s 1.6s var(--ease) forwards;
+}
+.scroll-cue span{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);}
+.scroll-track{width:20px;height:32px;border:1.5px solid var(--border2);border-radius:10px;position:relative;}
+.scroll-track::after{
+  content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  width:3px;height:6px;background:var(--teal);border-radius:3px;
+  animation:scrollBob 2s ease-in-out infinite;
+}
+@keyframes scrollBob{0%,100%{top:5px;opacity:1;}80%{top:16px;opacity:0;}}
+
+/* Stats floating card */
+.hero-stats-card{
+  position:absolute;bottom:5rem;right:5vw;
+  display:flex;gap:2rem;
+  background:rgba(12,12,30,0.7);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border2);
+  border-radius:var(--r2);
+  padding:1.25rem 2rem;
+  z-index:2;
+  opacity:0;animation:fadeLeft 0.9s 1.4s var(--ease) forwards;
+}
+.hstat{text-align:center;}
+.hstat-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.8rem;font-weight:700;
+  color:var(--teal);line-height:1;
+}
+.hstat-label{font-size:0.72rem;color:var(--text3);margin-top:0.25rem;letter-spacing:0.06em;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(35px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(35px);}to{opacity:1;transform:translateX(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* ══════════════════════════════════════════
+   SECTION SHARED
+══════════════════════════════════════════ */
+section{padding:7rem 5vw;position:relative;z-index:1;}
+.sec-tag{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;font-weight:700;
+  letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:0.75rem;
+}
+.sec-tag::before{content:'//';opacity:0.5;}
+.sec-title{
+  font-size:clamp(2rem,5vw,3.5rem);
+  font-weight:800;line-height:1.05;
+  letter-spacing:-0.03em;margin-bottom:1rem;
+}
+.sec-title .t{
+  background:linear-gradient(135deg,var(--teal),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.sec-sub{
+  color:var(--text2);font-size:1.05rem;
+  font-weight:400;max-width:500px;
+  line-height:1.8;margin-bottom:4rem;
+}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(45px);transition:opacity 0.85s var(--ease),transform 0.85s var(--ease);}
+.rv.on{opacity:1;transform:translateY(0);}
+.rv-l{opacity:0;transform:translateX(-45px);transition:opacity 0.85s var(--ease),transform 0.85s var(--ease);}
+.rv-l.on{opacity:1;transform:translateX(0);}
+.rv-r{opacity:0;transform:translateX(45px);transition:opacity 0.85s var(--ease),transform 0.85s var(--ease);}
+.rv-r.on{opacity:1;transform:translateX(0);}
+.rv-s{opacity:0;transform:scale(0.88);transition:opacity 0.85s var(--ease),transform 0.85s var(--ease);}
+.rv-s.on{opacity:1;transform:scale(1);}
+
+/* ══════════════════════════════════════════
+   ABOUT
+══════════════════════════════════════════ */
+#about{background:var(--bg2);}
+.about-layout{
+  display:grid;grid-template-columns:1fr 1.3fr;
+  gap:5rem;align-items:center;
+}
+.about-visual{
+  position:relative;
+  aspect-ratio:0.85;
+  border-radius:var(--r2);
+  overflow:hidden;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+}
+.about-visual::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 25%,rgba(0,212,184,0.15) 0%,transparent 55%),
+             radial-gradient(ellipse at 70% 75%,rgba(255,107,53,0.1) 0%,transparent 55%);
+}
+.av-code{
+  position:absolute;inset:0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:rgba(0,212,184,0.15);
+  padding:1.5rem;line-height:1.9;overflow:hidden;
+  white-space:pre;pointer-events:none;
+}
+.av-center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:0.75rem;
+}
+.av-initials{
+  font-family:'JetBrains Mono',monospace;
+  font-size:4.5rem;font-weight:800;
+  background:linear-gradient(135deg,var(--teal),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;
+}
+.av-role{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;color:var(--teal);
+  letter-spacing:0.15em;text-transform:uppercase;
+}
+.av-badge{
+  position:absolute;bottom:-1rem;right:-1rem;
+  background:var(--bg2);backdrop-filter:blur(20px);
+  border:1px solid var(--border2);border-radius:var(--r);
+  padding:1rem 1.4rem;
+  display:flex;align-items:center;gap:0.8rem;
+}
+.av-badge-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:2rem;font-weight:800;color:var(--orange);line-height:1;
+}
+.av-badge-label{font-size:0.72rem;color:var(--text2);max-width:55px;line-height:1.4;}
+
+.about-text p{
+  color:var(--text2);font-size:0.98rem;
+  line-height:1.9;font-weight:400;
+  margin-bottom:1.25rem;
+}
+.about-highlights{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1rem;margin:2rem 0;
+}
+.highlight-item{
+  display:flex;align-items:flex-start;gap:0.7rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:1rem;
+  transition:border-color 0.3s;
+}
+.highlight-item:hover{border-color:var(--teal);}
+.hi-icon{font-size:1.2rem;flex-shrink:0;margin-top:0.1rem;}
+.hi-label{font-size:0.82rem;font-weight:600;color:var(--text);line-height:1.4;}
+.hi-sub{font-size:0.72rem;color:var(--text2);margin-top:0.2rem;}
+.about-socials{display:flex;gap:0.75rem;margin-top:2.5rem;}
+.soc-btn{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border2);
+  font-size:1rem;color:var(--text2);
+  transition:all 0.3s var(--ease);
+}
+.soc-btn:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-4px);box-shadow:var(--glow-t);}
+
+/* ══════════════════════════════════════════
+   STATS BAND
+══════════════════════════════════════════ */
+.stats-band{
+  background:var(--bg3);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:3.5rem 5vw;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2rem;
+  text-align:center;
+  position:relative;z-index:1;
+}
+.stat-card{padding:1rem;}
+.stat-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:2.8rem;font-weight:800;
+  background:linear-gradient(135deg,var(--teal),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;
+  display:block;
+}
+.stat-label{
+  font-size:0.8rem;color:var(--text2);
+  margin-top:0.4rem;letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════
+   SKILLS
+══════════════════════════════════════════ */
+#skills{background:var(--bg);}
+.skills-layout{
+  display:grid;grid-template-columns:1.1fr 1fr;
+  gap:5rem;align-items:start;
+}
+.skill-group{margin-bottom:2.5rem;}
+.sg-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;font-weight:700;
+  letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--text3);
+  display:flex;align-items:center;gap:0.75rem;
+  margin-bottom:1.5rem;
+}
+.sg-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.bar-wrap{margin-bottom:1.35rem;}
+.bar-head{
+  display:flex;justify-content:space-between;
+  margin-bottom:0.55rem;
+}
+.bar-name{font-size:0.88rem;font-weight:600;}
+.bar-pct{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;color:var(--teal);font-weight:600;
+}
+.bar-track{
+  height:5px;background:var(--surface2);
+  border-radius:5px;overflow:hidden;
+}
+.bar-fill{
+  height:100%;border-radius:5px;width:0%;
+  background:linear-gradient(90deg,var(--teal),var(--orange));
+  transition:width 1.5s var(--ease);
+  position:relative;
+}
+.bar-fill::after{
+  content:'';position:absolute;
+  right:0;top:50%;transform:translateY(-50%);
+  width:10px;height:10px;border-radius:50%;
+  background:var(--orange);
+  box-shadow:0 0 14px var(--orange);
+}
+
+/* Tech icon grid */
+.tech-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+}
+.tech-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.4rem 1rem;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0.6rem;text-align:center;
+  transition:border-color 0.3s,transform 0.3s var(--ease),box-shadow 0.3s;
+}
+.tech-card:hover{
+  border-color:var(--teal);transform:translateY(-6px);
+  box-shadow:0 20px 50px rgba(0,0,0,0.3),0 0 20px rgba(0,212,184,0.1);
+}
+.tc-icon{font-size:1.9rem;}
+.tc-name{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;font-weight:600;
+  color:var(--text2);letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════
+   PROJECTS
+══════════════════════════════════════════ */
+#projects{background:var(--bg2);}
+.proj-filters{
+  display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:3rem;
+}
+.pf-btn{
+  padding:0.45rem 1.1rem;border-radius:100px;
+  font-size:0.78rem;font-weight:600;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);transition:all 0.3s;cursor:none;
+}
+.pf-btn.on,.pf-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
+.proj-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+  gap:1.75rem;
+}
+.proj-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;
+  transition:border-color 0.4s,box-shadow 0.4s;
+  cursor:none;
+  transform-style:preserve-3d;
+}
+.proj-card:hover{
+  border-color:rgba(0,212,184,0.35);
+  box-shadow:0 30px 80px rgba(0,0,0,0.4);
+}
+.proj-thumb{
+  height:210px;position:relative;overflow:hidden;
+}
+.proj-thumb-bg{
+  position:absolute;inset:0;
+  transition:transform 0.6s var(--ease);
+}
+.proj-card:hover .proj-thumb-bg{transform:scale(1.07);}
+.proj-thumb-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,rgba(6,6,16,0.95) 100%);
+  z-index:1;
+}
+.proj-tag{
+  position:absolute;top:1rem;left:1rem;z-index:2;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.68rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:0.3rem 0.75rem;border-radius:100px;
+  background:rgba(6,6,16,0.7);backdrop-filter:blur(10px);
+  border:1px solid var(--border2);color:var(--teal);
+}
+.proj-body{padding:1.5rem 1.5rem 1.75rem;}
+.proj-name{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1.15rem;font-weight:700;
+  margin-bottom:0.6rem;
+  transition:color 0.3s;
+}
+.proj-card:hover .proj-name{color:var(--teal);}
+.proj-desc{font-size:0.86rem;color:var(--text2);line-height:1.7;margin-bottom:1.25rem;}
+.proj-feats{list-style:none;display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.4rem;}
+.proj-feats li{
+  font-size:0.8rem;color:var(--text2);
+  padding-left:1.1rem;position:relative;
+}
+.proj-feats li::before{
+  content:'';position:absolute;left:0;top:0.6em;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--teal);
+}
+.proj-tech{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.5rem;}
+.ptag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.68rem;font-weight:600;
+  padding:0.25rem 0.65rem;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text3);
+}
+.proj-actions{display:flex;gap:0.75rem;}
+.pa-btn{
+  flex:1;padding:0.6rem;border-radius:10px;
+  font-size:0.8rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:0.4rem;
+  transition:all 0.3s var(--ease);
+  border:1px solid var(--border2);
+  background:var(--surface);color:var(--text2);
+}
+.pa-btn.primary{
+  background:var(--teal-dim);border-color:rgba(0,212,184,0.3);
+  color:var(--teal);
+}
+.pa-btn:hover{transform:translateY(-2px);}
+.pa-btn.primary:hover{background:var(--teal);color:#050510;box-shadow:var(--glow-t);}
+
+/* Spotlight glow on card */
+.proj-card::before{
+  content:'';position:absolute;inset:0;border-radius:var(--r2);
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),
+    rgba(0,212,184,0.07) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.4s;pointer-events:none;z-index:0;
+}
+.proj-card:hover::before{opacity:1;}
+
+/* ══════════════════════════════════════════
+   SERVICES
+══════════════════════════════════════════ */
+#services{background:var(--bg);}
+.services-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.5rem;
+}
+.srv-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:2rem;
+  transition:border-color 0.35s,transform 0.35s var(--ease),box-shadow 0.35s;
+  position:relative;overflow:hidden;
+}
+.srv-card::before{
+  content:'';position:absolute;
+  top:-30%;left:-30%;width:160%;height:160%;
+  background:radial-gradient(circle,rgba(0,212,184,0.05) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.4s;
+}
+.srv-card:hover{
+  border-color:rgba(0,212,184,0.3);
+  transform:translateY(-6px);
+  box-shadow:0 25px 60px rgba(0,0,0,0.3);
+}
+.srv-card:hover::before{opacity:1;}
+.srv-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;
+  margin-bottom:1.4rem;
+  position:relative;z-index:1;
+}
+.srv-name{
+  font-size:1.05rem;font-weight:700;
+  margin-bottom:0.6rem;position:relative;z-index:1;
+}
+.srv-desc{font-size:0.86rem;color:var(--text2);line-height:1.7;position:relative;z-index:1;}
+.srv-items{
+  list-style:none;margin-top:1.1rem;
+  display:flex;flex-direction:column;gap:0.35rem;
+  position:relative;z-index:1;
+}
+.srv-items li{
+  font-size:0.78rem;color:var(--text2);
+  display:flex;align-items:center;gap:0.5rem;
+}
+.srv-items li::before{
+  content:'→';color:var(--teal);font-size:0.7rem;
+}
+
+/* ══════════════════════════════════════════
+   EXPERIENCE / TIMELINE
+══════════════════════════════════════════ */
+#experience{background:var(--bg2);}
+.tl-wrap{
+  max-width:750px;margin:0 auto;
+  padding-left:2.5rem;position:relative;
+}
+.tl-wrap::before{
+  content:'';position:absolute;
+  left:0;top:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,var(--teal),var(--orange),transparent);
+}
+.tl-item{
+  position:relative;margin-bottom:3.5rem;
+  opacity:0;transform:translateX(-30px);
+  transition:opacity 0.8s var(--ease),transform 0.8s var(--ease);
+}
+.tl-item.on{opacity:1;transform:translateX(0);}
+.tl-node{
+  position:absolute;left:-2.5rem;top:2px;
+  width:13px;height:13px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--teal);
+  transform:translateX(-6px);
+  box-shadow:0 0 14px rgba(0,212,184,0.5);
+  transition:background 0.3s;
+}
+.tl-item:hover .tl-node{background:var(--teal);}
+.tl-date{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:0.5rem;
+}
+.tl-title{
+  font-size:1.25rem;font-weight:700;
+  margin-bottom:0.3rem;
+}
+.tl-sub{font-size:0.85rem;color:var(--orange);font-weight:500;margin-bottom:1rem;}
+.tl-body{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);padding:1.4rem;
+}
+.tl-list{list-style:none;display:flex;flex-direction:column;gap:0.65rem;}
+.tl-list li{
+  font-size:0.875rem;color:var(--text2);
+  padding-left:1.1rem;position:relative;line-height:1.65;
+}
+.tl-list li::before{
+  content:'';position:absolute;left:0;top:0.6em;
+  width:5px;height:5px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--orange));
+}
+
+/* ══════════════════════════════════════════
+   CONTACT
+══════════════════════════════════════════ */
+#contact{background:var(--bg);}
+.contact-layout{
+  display:grid;grid-template-columns:1fr 1.3fr;
+  gap:5rem;align-items:start;
+}
+.contact-left h3{
+  font-size:1.4rem;font-weight:700;margin-bottom:0.75rem;
+}
+.contact-left p{
+  color:var(--text2);font-size:0.95rem;
+  line-height:1.85;font-weight:400;margin-bottom:2rem;
+}
+.contact-item{
+  display:flex;align-items:center;gap:1rem;
+  padding:0.9rem 0;
+  border-bottom:1px solid var(--border);
+}
+.ci-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--teal-dim);border:1px solid rgba(0,212,184,0.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ci-label{font-size:0.7rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;}
+.ci-value{font-size:0.9rem;font-weight:600;margin-top:0.15rem;}
+.avail-badge{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);
+  border-radius:100px;padding:0.5rem 1.1rem;
+  font-size:0.8rem;font-weight:600;color:#22c55e;
+  margin-top:1.75rem;
+}
+
+/* Form */
+.c-form{display:flex;flex-direction:column;gap:1.1rem;}
+.fg{position:relative;}
+.fg label{
+  display:block;font-size:0.72rem;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text2);margin-bottom:0.55rem;
+}
+.fg input,.fg textarea,.fg select{
+  width:100%;padding:0.95rem 1.1rem;
+  background:var(--bg2);
+  border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-size:0.92rem;outline:none;
+  transition:border-color 0.3s,box-shadow 0.3s,background 0.3s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  resize:none;
+}
+.fg input:focus,.fg textarea:focus{
+  border-color:var(--teal);
+  background:var(--bg3);
+  box-shadow:0 0 0 3px rgba(0,212,184,0.1);
+}
+.fg textarea{min-height:130px;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-submit{
+  width:100%;padding:1rem;border-radius:100px;
+  font-size:0.95rem;font-weight:800;letter-spacing:0.04em;
+  color:#050510;cursor:none;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  position:relative;overflow:hidden;
+  transition:transform 0.3s var(--ease),box-shadow 0.3s;
+}
+.form-submit::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--orange),#e5520a);
+  opacity:0;transition:opacity 0.4s;
+}
+.form-submit:hover{transform:translateY(-3px);box-shadow:var(--glow-t);}
+.form-submit:hover::before{opacity:1;}
+.form-submit span{position:relative;z-index:1;}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+.footer-line{
+  height:2px;
+  background:linear-gradient(90deg,var(--teal),var(--violet),var(--orange));
+}
+footer{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:2.5rem 5vw;
+  display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:1.25rem;
+}
+.footer-brand{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;font-weight:700;color:var(--teal);
+}
+.footer-copy{font-size:0.8rem;color:var(--text2);}
+.footer-copy a{color:var(--teal);}
+.footer-links{display:flex;gap:1.5rem;list-style:none;}
+.footer-links a{
+  font-size:0.78rem;color:var(--text2);letter-spacing:0.04em;
+  transition:color 0.3s;
+}
+.footer-links a:hover{color:var(--teal);}
+
+/* ══════════════════════════════════════════
+   BACK TO TOP
+══════════════════════════════════════════ */
+#btt{
+  position:fixed;bottom:2rem;right:2rem;
+  width:46px;height:46px;border-radius:50%;
+  background:var(--teal);color:#050510;
+  display:flex;align-items:center;justify-content:center;
+  z-index:400;cursor:none;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.4s,transform 0.3s var(--ease),box-shadow 0.3s;
+  font-size:1.1rem;font-weight:700;
+}
+#btt.show{opacity:1;pointer-events:all;}
+#btt:hover{transform:translateY(-4px);box-shadow:var(--glow-t);}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:1024px){
+  .about-layout{grid-template-columns:1fr;gap:3rem;}
+  .skills-layout{grid-template-columns:1fr;gap:3rem;}
+  .contact-layout{grid-template-columns:1fr;gap:3rem;}
+  .float-pills,.hero-stats-card{display:none;}
+}
+@media(max-width:768px){
+  .nav-links,.nav-cta{display:none;}
+  .hamburger{display:flex;}
+  .mob-menu{display:flex;}
+  section{padding:5rem 5vw;}
+  .stats-band{grid-template-columns:1fr 1fr;}
+  .tech-grid{grid-template-columns:repeat(3,1fr);}
+  .about-highlights{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+  .hero-actions{flex-direction:column;}
+  .btn-fill,.btn-outline,.btn-cv{width:100%;justify-content:center;}
+  .stats-band{grid-template-columns:1fr 1fr;}
+  .proj-grid{grid-template-columns:1fr;}
+  .fg-row{grid-template-columns:1fr;}
+  footer{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ────── LOADER ────── -->
+<div id="loader">
+  <div class="loader-logo">AboElsheikh<span style="color:var(--orange)">.</span>dev</div>
+  <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- ────── CURSOR ────── -->
+<div id="cur-ring"></div>
+<div id="cur-dot"></div>
+
+<!-- ────── SCROLL PROGRESS ────── -->
+<div id="scroll-progress"></div>
+
+<!-- ════════════════════ NAV ════════════════════ -->
+<nav id="navbar">
+  <div class="nav-brand">AboElsheikh</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#experience">Journey</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeBtn" title="Toggle theme">🌙</button>
+    <a href="#contact" class="nav-cta">Hire Me</a>
+  </div>
+  <div class="hamburger" id="ham"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mob-menu" id="mobMenu">
+  <a href="#about" class="mob-link">About</a>
+  <a href="#skills" class="mob-link">Skills</a>
+  <a href="#projects" class="mob-link">Projects</a>
+  <a href="#services" class="mob-link">Services</a>
+  <a href="#experience" class="mob-link">Journey</a>
+  <a href="#contact" class="mob-link">Contact</a>
+</div>
+
+<!-- ════════════════════ HERO ════════════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-chip">
+      <span class="chip-dot"></span>
+      Available for Freelance Projects
+    </div>
+    <h1 class="hero-name">
+      <span class="word-1">Abo</span>
+      <span class="word-2">Elsheikh</span>
+    </h1>
+    <div class="hero-typing-row">
+      <span class="typing-prompt">~/dev $</span>
+      <span id="hero-type"></span>
+    </div>
+    <p class="hero-tagline">
+      I build responsive, clean, and modern mobile applications focused on smooth user experiences, performance, and solid code structure.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-fill">
+        <span>View Projects</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#contact" class="btn-outline">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 6l7 5 7-5" stroke="currentColor" stroke-width="1.2"/></svg>
+        Contact Me
+      </a>
+      <a href="#" class="btn-cv" download>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4 7l4 4 4-4M2 13h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download CV
+      </a>
+    </div>
+  </div>
+
+  <!-- Floating tech pills -->
+  <div class="float-pills">
+    <div class="float-pill"><span class="pill-icon">💙</span> Flutter</div>
+    <div class="float-pill"><span class="pill-icon">🎯</span> Dart</div>
+    <div class="float-pill"><span class="pill-icon">🔥</span> Firebase</div>
+    <div class="float-pill"><span class="pill-icon">🤖</span> Android</div>
+    <div class="float-pill"><span class="pill-icon">🐙</span> Git & GitHub</div>
+  </div>
+
+  <!-- Hero stats -->
+  <div class="hero-stats-card">
+    <div class="hstat"><div class="hstat-num" data-target="5">0</div><div class="hstat-label">Projects</div></div>
+    <div class="hstat"><div class="hstat-num" data-target="12">0</div><div class="hstat-label">Tech Skills</div></div>
+    <div class="hstat"><div class="hstat-num" data-target="2">0</div><div class="hstat-label">Years Exp</div></div>
+  </div>
+
+  <div class="scroll-cue">
+    <div class="scroll-track"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ ABOUT ════════════════════ -->
+<section id="about">
+  <div class="about-layout">
+    <div class="rv-l">
+      <div class="about-visual">
+        <div class="av-code" id="avCode"></div>
+        <div class="av-center">
+          <div class="av-initials">AE</div>
+          <div class="av-role">Flutter Developer</div>
+        </div>
+        <div class="av-badge">
+          <div class="av-badge-num">2+</div>
+          <div class="av-badge-label">Years Learning</div>
+        </div>
+      </div>
+    </div>
+    <div class="about-text rv-r">
+      <div class="sec-tag">About Me</div>
+      <h2 class="sec-title">Passionate Flutter<br/><span class="t">Developer</span></h2>
+      <p>I am a Flutter Developer passionate about building responsive, clean, and modern mobile applications. I focus on creating smooth user experiences, solving technical problems, and improving app performance.</p>
+      <p>I have experience working with Flutter and Android development concepts, including UI implementation, local storage, debugging, and application structure.</p>
+      <div class="about-highlights">
+        <div class="highlight-item"><span class="hi-icon">📱</span><div><div class="hi-label">Flutter Development</div><div class="hi-sub">Cross-platform mobile apps</div></div></div>
+        <div class="highlight-item"><span class="hi-icon">🎨</span><div><div class="hi-label">UI/UX Implementation</div><div class="hi-sub">Pixel-perfect interfaces</div></div></div>
+        <div class="highlight-item"><span class="hi-icon">🔥</span><div><div class="hi-label">Firebase & APIs</div><div class="hi-sub">Backend integration</div></div></div>
+        <div class="highlight-item"><span class="hi-icon">⚡</span><div><div class="hi-label">App Performance</div><div class="hi-sub">Optimization & debugging</div></div></div>
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
+        <a href="#projects" class="btn-fill"><span>View My Work</span></a>
+        <a href="#contact" class="btn-outline">Get In Touch</a>
+      </div>
+      <div class="about-socials">
+        <a href="#" class="soc-btn" title="GitHub">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1C4.58 1 1 4.67 1 9.19c0 3.63 2.29 6.71 5.47 7.79.4.07.55-.18.55-.39v-1.37C4.73 15.78 4.26 14 4.26 14c-.36-.94-.89-1.19-.89-1.19-.73-.51.05-.5.05-.5.81.06 1.23.85 1.23.85.72 1.26 1.88.9 2.34.69.07-.53.28-.9.51-1.1-1.78-.21-3.65-.91-3.65-4.06 0-.9.31-1.63.83-2.21-.08-.21-.36-1.04.08-2.18 0 0 .67-.22 2.2.84A7.47 7.47 0 019 5.02c.68 0 1.36.09 2 .27 1.53-1.06 2.2-.84 2.2-.84.44 1.14.16 1.97.08 2.18.52.58.83 1.31.83 2.21 0 3.16-1.87 3.85-3.66 4.05.29.25.54.75.54 1.52v2.25c0 .21.15.46.55.38C15.71 15.9 18 12.82 18 9.19 18 4.67 14.42 1 9 1z" fill="currentColor"/></svg>
+        </a>
+        <a href="mailto:aboelsheikh007@gmail.com" class="soc-btn" title="Email">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M1 6l8 5 8-5" stroke="currentColor" stroke-width="1.2"/></svg>
+        </a>
+        <a href="#" class="soc-btn" title="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.2"/><path d="M5 8v5M5 5v.5M8 13v-3a2 2 0 014 0v3M8 8v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </a>
+        <a href="#" class="soc-btn" title="Twitter">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2.5h14M2 15.5l14-13M16 2.5L2 15.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band rv">
+  <div class="stat-card"><span class="stat-num" data-target="5">0</span><div class="stat-label">Projects Built</div></div>
+  <div class="stat-card"><span class="stat-num" data-target="12">0</span><div class="stat-label">Technologies</div></div>
+  <div class="stat-card"><span class="stat-num" data-target="100">0</span><div class="stat-label">% Dedication</div></div>
+  <div class="stat-card"><span class="stat-num" data-target="2">0</span><div class="stat-label">Years Journey</div></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ SKILLS ════════════════════ -->
+<section id="skills">
+  <div class="rv">
+    <div class="sec-tag">Expertise</div>
+    <h2 class="sec-title">Technical <span class="t">Skills</span></h2>
+    <p class="sec-sub">A modern tech stack focused on mobile development, with skills spanning design, backend, and tooling.</p>
+  </div>
+  <div class="skills-layout">
+    <div class="rv-l">
+      <div class="skill-group">
+        <div class="sg-title">Core Development</div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Flutter Development</span><span class="bar-pct">82%</span></div><div class="bar-track"><div class="bar-fill" data-w="82"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Dart Programming</span><span class="bar-pct">80%</span></div><div class="bar-track"><div class="bar-fill" data-w="80"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Responsive UI Design</span><span class="bar-pct">85%</span></div><div class="bar-track"><div class="bar-fill" data-w="85"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">REST API Integration</span><span class="bar-pct">75%</span></div><div class="bar-track"><div class="bar-fill" data-w="75"></div></div></div>
+      </div>
+      <div class="skill-group">
+        <div class="sg-title">Mobile & Backend</div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Firebase Basics</span><span class="bar-pct">70%</span></div><div class="bar-track"><div class="bar-fill" data-w="70"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Android Dev Basics</span><span class="bar-pct">68%</span></div><div class="bar-track"><div class="bar-fill" data-w="68"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Git & GitHub</span><span class="bar-pct">78%</span></div><div class="bar-track"><div class="bar-fill" data-w="78"></div></div></div>
+        <div class="bar-wrap"><div class="bar-head"><span class="bar-name">Debugging & Testing</span><span class="bar-pct">72%</span></div><div class="bar-track"><div class="bar-fill" data-w="72"></div></div></div>
+      </div>
+    </div>
+    <div class="rv-r">
+      <div class="sg-title" style="margin-bottom:1.5rem;">Tools & Technologies</div>
+      <div class="tech-grid">
+        <div class="tech-card"><div class="tc-icon">💙</div><div class="tc-name">Flutter</div></div>
+        <div class="tech-card"><div class="tc-icon">🎯</div><div class="tc-name">Dart</div></div>
+        <div class="tech-card"><div class="tc-icon">🤖</div><div class="tc-name">Kotlin</div></div>
+        <div class="tech-card"><div class="tc-icon">🔥</div><div class="tc-name">Firebase</div></div>
+        <div class="tech-card"><div class="tc-icon">🌐</div><div class="tc-name">REST APIs</div></div>
+        <div class="tech-card"><div class="tc-icon">🗄️</div><div class="tc-name">Room DB</div></div>
+        <div class="tech-card"><div class="tc-icon">📦</div><div class="tc-name">Shared Prefs</div></div>
+        <div class="tech-card"><div class="tc-icon">🐙</div><div class="tc-name">Git/GitHub</div></div>
+        <div class="tech-card"><div class="tc-icon">🛠️</div><div class="tc-name">Android Studio</div></div>
+        <div class="tech-card"><div class="tc-icon">💻</div><div class="tc-name">VS Code</div></div>
+        <div class="tech-card"><div class="tc-icon">🔐</div><div class="tc-name">Auth</div></div>
+        <div class="tech-card"><div class="tc-icon">⚡</div><div class="tc-name">Performance</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ PROJECTS ════════════════════ -->
+<section id="projects">
+  <div class="rv">
+    <div class="sec-tag">Portfolio</div>
+    <h2 class="sec-title">Featured <span class="t">Projects</span></h2>
+    <p class="sec-sub">Mobile apps built with Flutter — from productivity tools to e-commerce solutions.</p>
+  </div>
+
+  <div class="proj-filters rv">
+    <button class="pf-btn on" data-f="all">All Projects</button>
+    <button class="pf-btn" data-f="flutter">Flutter</button>
+    <button class="pf-btn" data-f="android">Android</button>
+    <button class="pf-btn" data-f="ui">UI/UX</button>
+  </div>
+
+  <div class="proj-grid">
+
+    <!-- 1. Habit Tracker -->
+    <div class="proj-card rv-s" data-cat="flutter">
+      <div class="proj-thumb">
+        <div class="proj-thumb-bg">
+          <svg width="100%" height="100%" viewBox="0 0 400 210" fill="none">
+            <rect width="400" height="210" fill="#0a0f1e"/>
+            <rect x="30" y="25" width="110" height="165" rx="14" fill="rgba(0,212,184,0.06)" stroke="rgba(0,212,184,0.2)" stroke-width="1"/>
+            <rect x="42" y="38" width="86" height="12" rx="4" fill="rgba(0,212,184,0.2)"/>
+            <circle cx="87" cy="90" r="28" fill="none" stroke="rgba(0,212,184,0.15)" stroke-width="3"/>
+            <circle cx="87" cy="90" r="28" fill="none" stroke="rgba(0,212,184,0.6)" stroke-width="3" stroke-dasharray="88 176" stroke-linecap="round"/>
+            <text x="87" y="95" text-anchor="middle" font-size="11" fill="rgba(0,212,184,0.9)" font-family="JetBrains Mono,monospace">72%</text>
+            <rect x="42" y="135" width="55" height="7" rx="3" fill="rgba(0,212,184,0.1)"/>
+            <rect x="42" y="148" width="40" height="5" rx="2" fill="rgba(255,255,255,0.05)"/>
+            <rect x="160" y="25" width="215" height="75" rx="12" fill="rgba(255,107,53,0.05)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
+            <rect x="175" y="40" width="100" height="8" rx="3" fill="rgba(255,107,53,0.2)"/>
+            <rect x="175" y="56" width="140" height="5" rx="2" fill="rgba(255,255,255,0.06)"/>
+            <rect x="175" y="68" width="110" height="5" rx="2" fill="rgba(255,255,255,0.04)"/>
+            <rect x="160" y="112" width="100" height="78" rx="12" fill="rgba(0,212,184,0.05)" stroke="rgba(0,212,184,0.12)" stroke-width="1"/>
+            <rect x="275" y="112" width="100" height="78" rx="12" fill="rgba(124,92,252,0.05)" stroke="rgba(124,92,252,0.12)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="proj-thumb-overlay"></div>
+        <div class="proj-tag">Flutter App</div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-name">HabitFlow — Habit Tracker</div>
+        <div class="proj-desc">A clean habit tracking app with progress visualization, daily streaks, and reminder notifications.</div>
+        <ul class="proj-feats">
+          <li>Daily habit streaks with visual progress rings</li>
+          <li>Local storage with Shared Preferences</li>
+          <li>Custom notification reminders</li>
+        </ul>
+        <div class="proj-tech">
+          <span class="ptag">Flutter</span><span class="ptag">Dart</span>
+          <span class="ptag">SharedPrefs</span><span class="ptag">Notifications</span>
+        </div>
+        <div class="proj-actions">
+          <a href="#" class="pa-btn primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h11M1 1v11M12 1L1 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Live Demo
+          </a>
+          <a href="#" class="pa-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1C3.46 1 1 3.51 1 6.63c0 2.48 1.57 4.59 3.74 5.34.27.05.37-.12.37-.27V10.76C3.23 11.1 2.91 9.97 2.91 9.97c-.25-.64-.61-.81-.61-.81-.5-.35.04-.34.04-.34.55.04.84.58.84.58.5.86 1.29.61 1.6.47.05-.37.2-.61.35-.75-1.22-.14-2.5-.62-2.5-2.78 0-.61.21-1.11.57-1.51-.06-.14-.25-.71.05-1.49 0 0 .46-.15 1.5.58.44-.12.9-.18 1.37-.18.46 0 .93.06 1.37.18 1.04-.73 1.5-.58 1.5-.58.3.78.11 1.35.05 1.49.36.4.57.9.57 1.51 0 2.17-1.28 2.64-2.5 2.78.2.17.37.51.37 1.04v1.54c0 .15.1.32.38.26C11.43 11.22 13 9.11 13 6.63 13 3.51 10.54 1 7.5 1z" fill="currentColor"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. E-commerce -->
+    <div class="proj-card rv-s" data-cat="flutter" style="transition-delay:0.1s">
+      <div class="proj-thumb">
+        <div class="proj-thumb-bg">
+          <svg width="100%" height="100%" viewBox="0 0 400 210" fill="none">
+            <rect width="400" height="210" fill="#0f0a14"/>
+            <rect x="0" y="0" width="400" height="52" fill="rgba(124,92,252,0.1)"/>
+            <text x="200" y="30" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="14" fill="rgba(124,92,252,0.7)">ShopCart</text>
+            <text x="200" y="44" text-anchor="middle" font-size="8" fill="rgba(124,92,252,0.4)" font-family="JetBrains Mono,monospace">PREMIUM STORE</text>
+            <rect x="20" y="65" width="110" height="130" rx="12" fill="rgba(124,92,252,0.07)" stroke="rgba(124,92,252,0.2)" stroke-width="1"/>
+            <rect x="30" y="75" width="90" height="60" rx="8" fill="rgba(124,92,252,0.1)"/>
+            <text x="75" y="112" text-anchor="middle" font-size="28" fill="rgba(124,92,252,0.5)">👟</text>
+            <rect x="30" y="144" width="70" height="7" rx="3" fill="rgba(255,255,255,0.07)"/>
+            <rect x="30" y="158" width="50" height="5" rx="2" fill="rgba(124,92,252,0.2)"/>
+            <rect x="150" y="65" width="110" height="130" rx="12" fill="rgba(255,107,53,0.07)" stroke="rgba(255,107,53,0.2)" stroke-width="1"/>
+            <rect x="160" y="75" width="90" height="60" rx="8" fill="rgba(255,107,53,0.1)"/>
+            <text x="205" y="112" text-anchor="middle" font-size="28" fill="rgba(255,107,53,0.5)">👜</text>
+            <rect x="160" y="144" width="70" height="7" rx="3" fill="rgba(255,255,255,0.07)"/>
+            <rect x="160" y="158" width="50" height="5" rx="2" fill="rgba(255,107,53,0.2)"/>
+            <rect x="280" y="65" width="100" height="130" rx="12" fill="rgba(0,212,184,0.06)" stroke="rgba(0,212,184,0.15)" stroke-width="1"/>
+            <rect x="290" y="75" width="80" height="60" rx="8" fill="rgba(0,212,184,0.08)"/>
+            <text x="330" y="112" text-anchor="middle" font-size="28" fill="rgba(0,212,184,0.4)">⌚</text>
+          </svg>
+        </div>
+        <div class="proj-thumb-overlay" style="background:linear-gradient(to bottom,transparent 40%,rgba(10,6,16,0.95) 100%)"></div>
+        <div class="proj-tag" style="color:#9b8cff;border-color:rgba(124,92,252,0.3);">E-Commerce</div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-name">ShopCart — E-Commerce App</div>
+        <div class="proj-desc">A full-featured mobile shopping app with product listing, cart management, and user authentication.</div>
+        <ul class="proj-feats">
+          <li>Product catalog with search & filters</li>
+          <li>Cart with persistent local storage</li>
+          <li>Firebase authentication & favorites</li>
+        </ul>
+        <div class="proj-tech">
+          <span class="ptag">Flutter</span><span class="ptag">Firebase</span>
+          <span class="ptag">REST API</span><span class="ptag">Room DB</span>
+        </div>
+        <div class="proj-actions">
+          <a href="#" class="pa-btn primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h11M1 1v11M12 1L1 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Live Demo
+          </a>
+          <a href="#" class="pa-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1C3.46 1 1 3.51 1 6.63c0 2.48 1.57 4.59 3.74 5.34.27.05.37-.12.37-.27V10.76C3.23 11.1 2.91 9.97 2.91 9.97c-.25-.64-.61-.81-.61-.81-.5-.35.04-.34.04-.34.55.04.84.58.84.58.5.86 1.29.61 1.6.47.05-.37.2-.61.35-.75-1.22-.14-2.5-.62-2.5-2.78 0-.61.21-1.11.57-1.51-.06-.14-.25-.71.05-1.49 0 0 .46-.15 1.5.58.44-.12.9-.18 1.37-.18.46 0 .93.06 1.37.18 1.04-.73 1.5-.58 1.5-.58.3.78.11 1.35.05 1.49.36.4.57.9.57 1.51 0 2.17-1.28 2.64-2.5 2.78.2.17.37.51.37 1.04v1.54c0 .15.1.32.38.26C11.43 11.22 13 9.11 13 6.63 13 3.51 10.54 1 7.5 1z" fill="currentColor"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Task Manager -->
+    <div class="proj-card rv-s" data-cat="flutter" style="transition-delay:0.2s">
+      <div class="proj-thumb">
+        <div class="proj-thumb-bg">
+          <svg width="100%" height="100%" viewBox="0 0 400 210" fill="none">
+            <rect width="400" height="210" fill="#060c10"/>
+            <rect x="100" y="10" width="200" height="195" rx="18" fill="rgba(0,212,184,0.04)" stroke="rgba(0,212,184,0.15)" stroke-width="1.5"/>
+            <rect x="130" y="18" width="140" height="8" rx="4" fill="rgba(255,255,255,0.05)"/>
+            <rect x="115" y="38" width="170" height="32" rx="8" fill="rgba(0,212,184,0.08)" stroke="rgba(0,212,184,0.15)" stroke-width="1"/>
+            <circle cx="130" cy="54" r="7" fill="rgba(0,212,184,0.2)" stroke="rgba(0,212,184,0.4)" stroke-width="1"/>
+            <text x="130" y="58" text-anchor="middle" font-size="8" fill="rgba(0,212,184,0.8)">✓</text>
+            <rect x="145" y="48" width="80" height="5" rx="2" fill="rgba(255,255,255,0.08)"/>
+            <rect x="145" y="58" width="55" height="4" rx="2" fill="rgba(255,255,255,0.04)"/>
+            <rect x="115" y="78" width="170" height="32" rx="8" fill="rgba(255,107,53,0.06)" stroke="rgba(255,107,53,0.12)" stroke-width="1"/>
+            <circle cx="130" cy="94" r="7" fill="rgba(255,107,53,0.1)" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+            <rect x="145" y="88" width="90" height="5" rx="2" fill="rgba(255,255,255,0.07)"/>
+            <rect x="145" y="98" width="60" height="4" rx="2" fill="rgba(255,255,255,0.04)"/>
+            <rect x="115" y="118" width="170" height="32" rx="8" fill="rgba(124,92,252,0.06)" stroke="rgba(124,92,252,0.12)" stroke-width="1"/>
+            <circle cx="130" cy="134" r="7" fill="rgba(124,92,252,0.1)" stroke="rgba(124,92,252,0.3)" stroke-width="1"/>
+            <rect x="145" y="128" width="100" height="5" rx="2" fill="rgba(255,255,255,0.07)"/>
+            <rect x="145" y="138" width="70" height="4" rx="2" fill="rgba(255,255,255,0.04)"/>
+            <rect x="115" y="162" width="170" height="30" rx="8" fill="rgba(0,212,184,0.1)" stroke="rgba(0,212,184,0.2)" stroke-width="1"/>
+            <text x="200" y="181" text-anchor="middle" font-size="9" fill="rgba(0,212,184,0.7)" font-family="JetBrains Mono,monospace">+ Add Task</text>
+          </svg>
+        </div>
+        <div class="proj-thumb-overlay" style="background:linear-gradient(to bottom,transparent 40%,rgba(4,8,10,0.95) 100%)"></div>
+        <div class="proj-tag">Task Manager</div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-name">TaskFlow — Task Manager</div>
+        <div class="proj-desc">An intuitive task management app with categories, priorities, deadlines, and progress tracking.</div>
+        <ul class="proj-feats">
+          <li>Task categories with color labels</li>
+          <li>Local Room Database storage</li>
+          <li>Priority levels & deadline alerts</li>
+        </ul>
+        <div class="proj-tech">
+          <span class="ptag">Flutter</span><span class="ptag">Dart</span>
+          <span class="ptag">Room DB</span><span class="ptag">BLoC</span>
+        </div>
+        <div class="proj-actions">
+          <a href="#" class="pa-btn primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h11M1 1v11M12 1L1 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Live Demo
+          </a>
+          <a href="#" class="pa-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1C3.46 1 1 3.51 1 6.63c0 2.48 1.57 4.59 3.74 5.34.27.05.37-.12.37-.27V10.76C3.23 11.1 2.91 9.97 2.91 9.97c-.25-.64-.61-.81-.61-.81-.5-.35.04-.34.04-.34.55.04.84.58.84.58.5.86 1.29.61 1.6.47.05-.37.2-.61.35-.75-1.22-.14-2.5-.62-2.5-2.78 0-.61.21-1.11.57-1.51-.06-.14-.25-.71.05-1.49 0 0 .46-.15 1.5.58.44-.12.9-.18 1.37-.18.46 0 .93.06 1.37.18 1.04-.73 1.5-.58 1.5-.58.3.78.11 1.35.05 1.49.36.4.57.9.57 1.51 0 2.17-1.28 2.64-2.5 2.78.2.17.37.51.37 1.04v1.54c0 .15.1.32.38.26C11.43 11.22 13 9.11 13 6.63 13 3.51 10.54 1 7.5 1z" fill="currentColor"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Portfolio App -->
+    <div class="proj-card rv-s" data-cat="ui" style="transition-delay:0.3s">
+      <div class="proj-thumb">
+        <div class="proj-thumb-bg">
+          <svg width="100%" height="100%" viewBox="0 0 400 210" fill="none">
+            <rect width="400" height="210" fill="#0a0612"/>
+            <defs><linearGradient id="pg" x1="0" y1="0" x2="400" y2="210" gradientUnits="userSpaceOnUse"><stop stop-color="#7c5cfc" stop-opacity="0.15"/><stop offset="1" stop-color="#ff6b35" stop-opacity="0.1"/></linearGradient></defs>
+            <rect width="400" height="210" fill="url(#pg)"/>
+            <rect x="50" y="20" width="300" height="175" rx="16" fill="rgba(255,255,255,0.02)" stroke="rgba(124,92,252,0.2)" stroke-width="1"/>
+            <circle cx="200" cy="70" r="30" fill="rgba(124,92,252,0.12)" stroke="rgba(124,92,252,0.25)" stroke-width="1.5"/>
+            <text x="200" y="78" text-anchor="middle" font-size="22" fill="rgba(124,92,252,0.7)">◈</text>
+            <rect x="140" y="112" width="120" height="12" rx="4" fill="rgba(255,255,255,0.08)"/>
+            <rect x="155" y="132" width="90" height="8" rx="3" fill="rgba(124,92,252,0.2)"/>
+            <rect x="75" y="155" width="110" height="28" rx="10" fill="rgba(124,92,252,0.12)" stroke="rgba(124,92,252,0.2)" stroke-width="1"/>
+            <rect x="215" y="155" width="110" height="28" rx="10" fill="rgba(0,212,184,0.08)" stroke="rgba(0,212,184,0.15)" stroke-width="1"/>
+            <text x="130" y="173" text-anchor="middle" font-size="8" fill="rgba(124,92,252,0.7)" font-family="JetBrains Mono,monospace">Projects</text>
+            <text x="270" y="173" text-anchor="middle" font-size="8" fill="rgba(0,212,184,0.7)" font-family="JetBrains Mono,monospace">Contact</text>
+          </svg>
+        </div>
+        <div class="proj-thumb-overlay" style="background:linear-gradient(to bottom,transparent 40%,rgba(8,4,14,0.95) 100%)"></div>
+        <div class="proj-tag" style="color:#9b8cff;border-color:rgba(124,92,252,0.3);">UI/UX</div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-name">Portfolio App — Flutter</div>
+        <div class="proj-desc">A personal portfolio mobile app showcasing projects, skills, and contact information with smooth animations.</div>
+        <ul class="proj-feats">
+          <li>Animated project showcase cards</li>
+          <li>Custom page transitions</li>
+          <li>Dark/light theme support</li>
+        </ul>
+        <div class="proj-tech">
+          <span class="ptag">Flutter</span><span class="ptag">Dart</span>
+          <span class="ptag">Animations</span><span class="ptag">Provider</span>
+        </div>
+        <div class="proj-actions">
+          <a href="#" class="pa-btn primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h11M1 1v11M12 1L1 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Live Demo
+          </a>
+          <a href="#" class="pa-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1C3.46 1 1 3.51 1 6.63c0 2.48 1.57 4.59 3.74 5.34.27.05.37-.12.37-.27V10.76C3.23 11.1 2.91 9.97 2.91 9.97c-.25-.64-.61-.81-.61-.81-.5-.35.04-.34.04-.34.55.04.84.58.84.58.5.86 1.29.61 1.6.47.05-.37.2-.61.35-.75-1.22-.14-2.5-.62-2.5-2.78 0-.61.21-1.11.57-1.51-.06-.14-.25-.71.05-1.49 0 0 .46-.15 1.5.58.44-.12.9-.18 1.37-.18.46 0 .93.06 1.37.18 1.04-.73 1.5-.58 1.5-.58.3.78.11 1.35.05 1.49.36.4.57.9.57 1.51 0 2.17-1.28 2.64-2.5 2.78.2.17.37.51.37 1.04v1.54c0 .15.1.32.38.26C11.43 11.22 13 9.11 13 6.63 13 3.51 10.54 1 7.5 1z" fill="currentColor"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Productivity App -->
+    <div class="proj-card rv-s" data-cat="flutter android" style="transition-delay:0.4s">
+      <div class="proj-thumb">
+        <div class="proj-thumb-bg">
+          <svg width="100%" height="100%" viewBox="0 0 400 210" fill="none">
+            <rect width="400" height="210" fill="#060a08"/>
+            <rect x="20" y="20" width="165" height="175" rx="14" fill="rgba(0,212,184,0.04)" stroke="rgba(0,212,184,0.15)" stroke-width="1"/>
+            <rect x="35" y="35" width="135" height="50" rx="10" fill="rgba(0,212,184,0.08)"/>
+            <text x="102" y="65" text-anchor="middle" font-size="22" fill="rgba(0,212,184,0.6)">🧘</text>
+            <rect x="35" y="96" width="135" height="22" rx="6" fill="rgba(0,212,184,0.1)" stroke="rgba(0,212,184,0.2)" stroke-width="1"/>
+            <rect x="35" y="126" width="60" height="18" rx="6" fill="rgba(255,107,53,0.08)"/>
+            <rect x="105" y="126" width="65" height="18" rx="6" fill="rgba(0,212,184,0.06)"/>
+            <rect x="35" y="152" width="135" height="30" rx="6" fill="rgba(255,255,255,0.02)"/>
+            <rect x="215" y="20" width="165" height="80" rx="14" fill="rgba(255,107,53,0.05)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
+            <rect x="215" y="112" width="165" height="83" rx="14" fill="rgba(124,92,252,0.05)" stroke="rgba(124,92,252,0.15)" stroke-width="1"/>
+            <text x="298" y="60" text-anchor="middle" font-size="22" fill="rgba(255,107,53,0.5)">⏱️</text>
+            <text x="298" y="160" text-anchor="middle" font-size="22" fill="rgba(124,92,252,0.5)">📊</text>
+          </svg>
+        </div>
+        <div class="proj-thumb-overlay" style="background:linear-gradient(to bottom,transparent 40%,rgba(4,6,5,0.95) 100%)"></div>
+        <div class="proj-tag" style="color:#ff6b35;border-color:rgba(255,107,53,0.3);">Productivity</div>
+      </div>
+      <div class="proj-body">
+        <div class="proj-name">FocusZen — Productivity App</div>
+        <div class="proj-desc">A productivity app featuring Pomodoro timer, focus sessions, stats tracking, and motivational reminders.</div>
+        <ul class="proj-feats">
+          <li>Pomodoro timer with custom sessions</li>
+          <li>Analytics dashboard with charts</li>
+          <li>Firebase sync across devices</li>
+        </ul>
+        <div class="proj-tech">
+          <span class="ptag">Flutter</span><span class="ptag">Firebase</span>
+          <span class="ptag">Kotlin</span><span class="ptag">Charts</span>
+        </div>
+        <div class="proj-actions">
+          <a href="#" class="pa-btn primary">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 1h11M1 1v11M12 1L1 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Live Demo
+          </a>
+          <a href="#" class="pa-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1C3.46 1 1 3.51 1 6.63c0 2.48 1.57 4.59 3.74 5.34.27.05.37-.12.37-.27V10.76C3.23 11.1 2.91 9.97 2.91 9.97c-.25-.64-.61-.81-.61-.81-.5-.35.04-.34.04-.34.55.04.84.58.84.58.5.86 1.29.61 1.6.47.05-.37.2-.61.35-.75-1.22-.14-2.5-.62-2.5-2.78 0-.61.21-1.11.57-1.51-.06-.14-.25-.71.05-1.49 0 0 .46-.15 1.5.58.44-.12.9-.18 1.37-.18.46 0 .93.06 1.37.18 1.04-.73 1.5-.58 1.5-.58.3.78.11 1.35.05 1.49.36.4.57.9.57 1.51 0 2.17-1.28 2.64-2.5 2.78.2.17.37.51.37 1.04v1.54c0 .15.1.32.38.26C11.43 11.22 13 9.11 13 6.63 13 3.51 10.54 1 7.5 1z" fill="currentColor"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ SERVICES ════════════════════ -->
+<section id="services">
+  <div class="rv" style="text-align:center;max-width:550px;margin:0 auto 4rem;">
+    <div class="sec-tag" style="justify-content:center;">What I Offer</div>
+    <h2 class="sec-title">Services</h2>
+    <p class="sec-sub" style="margin:0 auto;">From mobile apps to API integration — I deliver complete solutions.</p>
+  </div>
+  <div class="services-grid">
+    <div class="srv-card rv-s">
+      <div class="srv-icon" style="background:rgba(0,212,184,0.1);border:1px solid rgba(0,212,184,0.2);">💙</div>
+      <div class="srv-name">Flutter App Development</div>
+      <div class="srv-desc">Cross-platform mobile apps for iOS and Android from a single codebase.</div>
+      <ul class="srv-items">
+        <li>Custom UI widgets</li>
+        <li>State management</li>
+        <li>Performance optimization</li>
+        <li>App store deployment</li>
+      </ul>
+    </div>
+    <div class="srv-card rv-s" style="transition-delay:0.1s">
+      <div class="srv-icon" style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.2);">🎨</div>
+      <div class="srv-name">UI/UX Implementation</div>
+      <div class="srv-desc">Pixel-perfect mobile interfaces with smooth animations and great UX.</div>
+      <ul class="srv-items">
+        <li>Responsive layouts</li>
+        <li>Custom animations</li>
+        <li>Dark/Light themes</li>
+        <li>Design system integration</li>
+      </ul>
+    </div>
+    <div class="srv-card rv-s" style="transition-delay:0.2s">
+      <div class="srv-icon" style="background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.2);">🌐</div>
+      <div class="srv-name">API & Backend Integration</div>
+      <div class="srv-desc">Connect your app to REST APIs, Firebase, and third-party services.</div>
+      <ul class="srv-items">
+        <li>REST API integration</li>
+        <li>Firebase (Auth, Firestore)</li>
+        <li>Local storage solutions</li>
+        <li>Authentication flows</li>
+      </ul>
+    </div>
+    <div class="srv-card rv-s" style="transition-delay:0.3s">
+      <div class="srv-icon" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);">🤖</div>
+      <div class="srv-name">Android Development</div>
+      <div class="srv-desc">Native Android basics with Kotlin and Android Studio support.</div>
+      <ul class="srv-items">
+        <li>Kotlin basics</li>
+        <li>Room database</li>
+        <li>Android Studio setup</li>
+        <li>Debugging & testing</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ EXPERIENCE ════════════════════ -->
+<section id="experience">
+  <div class="rv" style="text-align:center;max-width:550px;margin:0 auto 5rem;">
+    <div class="sec-tag" style="justify-content:center;">My Journey</div>
+    <h2 class="sec-title">Learning <span class="t">Path</span></h2>
+    <p class="sec-sub" style="margin:0 auto;">From starting Flutter to building production apps — a continuous growth story.</p>
+  </div>
+  <div class="tl-wrap">
+    <div class="tl-item">
+      <div class="tl-node"></div>
+      <div class="tl-date">2023 — Present</div>
+      <div class="tl-title">Flutter Developer</div>
+      <div class="tl-sub">Freelance & Personal Projects · Remote</div>
+      <div class="tl-body">
+        <ul class="tl-list">
+          <li>Built multiple Flutter apps covering productivity, e-commerce, and utility tools</li>
+          <li>Implemented REST API integrations and Firebase authentication flows</li>
+          <li>Applied responsive UI design principles for multiple screen sizes</li>
+          <li>Used local storage with Shared Preferences and Room Database</li>
+          <li>Managed version control with Git & GitHub across all projects</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-node"></div>
+      <div class="tl-date">2022 — 2023</div>
+      <div class="tl-title">Mobile Development Studies</div>
+      <div class="tl-sub">Self-Directed Learning · Online</div>
+      <div class="tl-body">
+        <ul class="tl-list">
+          <li>Mastered Flutter framework and Dart programming language fundamentals</li>
+          <li>Studied Android development with Kotlin basics and Android Studio</li>
+          <li>Learned UI/UX principles for mobile app design</li>
+          <li>Completed Firebase integration and authentication courses</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-node"></div>
+      <div class="tl-date">2021 — 2022</div>
+      <div class="tl-title">Programming Foundation</div>
+      <div class="tl-sub">Computer Science Basics · University</div>
+      <div class="tl-body">
+        <ul class="tl-list">
+          <li>Built strong programming fundamentals and logic skills</li>
+          <li>Learned data structures, algorithms, and problem-solving</li>
+          <li>First exposure to mobile development concepts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════ CONTACT ════════════════════ -->
+<section id="contact">
+  <div class="rv">
+    <div class="sec-tag">Get In Touch</div>
+    <h2 class="sec-title">Let's <span class="t">Build Together</span></h2>
+    <p class="sec-sub">Have a project in mind? I'm open to freelance work, collaborations, and new opportunities.</p>
+  </div>
+  <div class="contact-layout">
+    <div class="rv-l">
+      <h3>Ready to collaborate?</h3>
+      <p>I'm currently available for freelance Flutter development projects. Whether you need a mobile app from scratch or improvements to an existing one, let's talk.</p>
+      <div class="contact-item">
+        <div class="ci-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="var(--teal)" stroke-width="1.2"/><path d="M1 6l8 5 8-5" stroke="var(--teal)" stroke-width="1.2"/></svg>
+        </div>
+        <div><div class="ci-label">Email</div><div class="ci-value">aboelsheikh007@gmail.com</div></div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 2h3.5l1.5 4-2 1.5a11 11 0 005 5L12.5 10l4 1.5V15A2 2 0 0114.5 17C7.1 17 1 10.9 1 3.5A2 2 0 013 2z" stroke="var(--teal)" stroke-width="1.2"/></svg>
+        </div>
+        <div><div class="ci-label">Phone</div><div class="ci-value">+20 01203042123</div></div>
+      </div>
+      <div class="contact-item" style="border:none">
+        <div class="ci-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="var(--teal)" stroke-width="1.2"/><path d="M9 5v4l3 3" stroke="var(--teal)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="ci-label">Response Time</div><div class="ci-value">Within 24 hours</div></div>
+      </div>
+      <div class="avail-badge">
+        <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 8px #22c55e;animation:dotPulse 2s infinite;"></span>
+        Available for new projects
+      </div>
+    </div>
+    <div class="rv-r">
+      <form class="c-form" onsubmit="handleForm(event)">
+        <div class="fg-row">
+          <div class="fg"><label>First Name</label><input type="text" placeholder="Ahmed" required/></div>
+          <div class="fg"><label>Last Name</label><input type="text" placeholder="Ali"/></div>
+        </div>
+        <div class="fg"><label>Email Address</label><input type="email" placeholder="ahmed@example.com" required/></div>
+        <div class="fg"><label>Project Type</label>
+          <select style="appearance:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:0.95rem 1.1rem;width:100%;outline:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.92rem;transition:border-color 0.3s;">
+            <option value="">Select project type...</option>
+            <option>Flutter Mobile App</option>
+            <option>UI/UX Implementation</option>
+            <option>API Integration</option>
+            <option>Android Development</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Message</label><textarea placeholder="Tell me about your project ideas, timeline, and budget…" required></textarea></div>
+        <button type="submit" class="form-submit"><span id="fs-text">Send Message →</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ FOOTER ════════════════════ -->
+<div class="footer-line"></div>
+<footer>
+  <div class="footer-brand">AboElsheikh<span style="color:var(--orange)">.</span>dev</div>
+  <ul class="footer-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <p class="footer-copy">Designed & Developed by <a href="#">Abo Elsheikh</a> © 2025</p>
+</footer>
+
+<!-- Back to Top -->
+<button id="btt" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- ══════════════════════════════════════
+   JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+/* ─── LOADER ─── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+    setTimeout(() => document.getElementById('loader').remove(), 700);
+  }, 2000);
+});
+
+/* ─── CURSOR ─── */
+const ring = document.getElementById('cur-ring');
+const dot  = document.getElementById('cur-dot');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; dot.style.left = mx+'px'; dot.style.top = my+'px'; });
+(function moveCursor() {
+  rx += (mx-rx)*0.11; ry += (my-ry)*0.11;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(moveCursor);
+})();
+document.querySelectorAll('a,button,.proj-card,.tech-card,.srv-card').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+});
+
+/* ─── SCROLL PROGRESS ─── */
+const prog = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const p = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  prog.style.width = p + '%';
+}, {passive:true});
+
+/* ─── NAVBAR ─── */
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => nav.classList.toggle('solid', window.scrollY > 60), {passive:true});
+
+/* ─── BACK TO TOP ─── */
+const btt = document.getElementById('btt');
+window.addEventListener('scroll', () => btt.classList.toggle('show', window.scrollY > 600), {passive:true});
+
+/* ─── MOBILE MENU ─── */
+const ham = document.getElementById('ham');
+const mob = document.getElementById('mobMenu');
+ham.addEventListener('click', () => {
+  ham.classList.toggle('open');
+  mob.classList.toggle('open');
+  document.body.style.overflow = mob.classList.contains('open') ? 'hidden' : '';
+});
+document.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', () => {
+  ham.classList.remove('open'); mob.classList.remove('open'); document.body.style.overflow = '';
+}));
+
+/* ─── THEME TOGGLE ─── */
+const tBtn = document.getElementById('themeBtn');
+tBtn.addEventListener('click', () => {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
+  tBtn.textContent = isDark ? '🌙' : '☀️';
+});
+
+/* ─── TYPING EFFECT ─── */
+const roles = ['Flutter Developer', 'Dart Programmer', 'Mobile App Builder', 'UI/UX Implementer', 'Android Developer'];
+let ri=0,ci=0,del=false;
+const te = document.getElementById('hero-type');
+function type() {
+  const w = roles[ri];
+  if (!del) { te.textContent = w.slice(0,++ci); if(ci===w.length){del=true;setTimeout(type,2200);return;} }
+  else { te.textContent = w.slice(0,--ci); if(ci===0){del=false;ri=(ri+1)%roles.length;} }
+  setTimeout(type, del?50:100);
+}
+type();
+
+/* ─── PARTICLE CANVAS ─── */
+(function(){
+  const c=document.getElementById('hero-canvas');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize();
+  window.addEventListener('resize',resize,{passive:true});
+  class P{
+    constructor(){this.reset(true);}
+    reset(init){
+      this.x=Math.random()*W; this.y=init?Math.random()*H:H+10;
+      this.vx=(Math.random()-0.5)*0.25; this.vy=-(Math.random()*0.4+0.15);
+      this.r=Math.random()*1.2+0.3;
+      this.a=Math.random()*0.45+0.08;
+      this.c=Math.random()>0.6?'#00d4b8':Math.random()>0.5?'#ff6b35':'#7c5cfc';
+    }
+    update(){this.x+=this.vx;this.y+=this.vy;if(this.y<-8)this.reset(false);}
+    draw(){
+      ctx.save();ctx.globalAlpha=this.a;
+      ctx.fillStyle=this.c;ctx.shadowColor=this.c;ctx.shadowBlur=6;
+      ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+  }
+  for(let i=0;i<100;i++)pts.push(new P());
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{p.update();p.draw();});
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<90){ctx.save();ctx.globalAlpha=(1-d/90)*0.1;ctx.strokeStyle='#00d4b8';ctx.lineWidth=0.4;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();ctx.restore();}
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ─── ABOUT VISUAL CODE ─── */
+const codeLines = [
+'class AboElsheikh {',
+'  final name = "Abo Elsheikh";',
+'  final role = "Flutter Dev";',
+'  final skills = [',
+'    "Flutter",',
+'    "Dart",',
+'    "Firebase",',
+'    "REST APIs",',
+'    "Git",',
+'  ];',
+'  bool get isAvailable => true;',
+'  String build() {',
+'    return createApp(',
+'      clean: true,',
+'      fast: true,',
+'    );',
+'  }',
+'}',
+];
+document.getElementById('avCode').textContent = codeLines.join('\n');
+
+/* ─── SCROLL REVEAL ─── */
+const rvEls = document.querySelectorAll('.rv,.rv-l,.rv-r,.rv-s,.tl-item');
+const rvObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('on');rvObs.unobserve(e.target);} });
+}, {threshold:0.1});
+rvEls.forEach((el,i) => { el.style.transitionDelay = `${(i%5)*0.08}s`; rvObs.observe(el); });
+
+/* ─── SKILL BARS ─── */
+const bars = document.querySelectorAll('.bar-fill');
+const barObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.style.width=e.target.dataset.w+'%';barObs.unobserve(e.target);} });
+},{threshold:0.3});
+bars.forEach(b => barObs.observe(b));
+
+/* ─── COUNTER ANIMATION ─── */
+function animCounter(el) {
+  const target = +el.dataset.target;
+  let cur = 0;
+  const step = target / 60;
+  const t = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = Math.floor(cur) + (el.classList.contains('stat-num') && el.dataset.target === '100' ? '%' : '+');
+    if (cur >= target) clearInterval(t);
+  }, 25);
+}
+const counters = document.querySelectorAll('.stat-num,.hstat-num');
+const cntObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ animCounter(e.target); cntObs.unobserve(e.target); } });
+},{threshold:0.5});
+counters.forEach(c => cntObs.observe(c));
+
+/* ─── 3D TILT ON CARDS ─── */
+document.querySelectorAll('.proj-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r=card.getBoundingClientRect();
+    const dx=(e.clientX-(r.left+r.width/2))/(r.width/2);
+    const dy=(e.clientY-(r.top+r.height/2))/(r.height/2);
+    card.style.transform=`perspective(900px) rotateY(${dx*7}deg) rotateX(${-dy*7}deg) scale(1.02)`;
+    card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+    card.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+  });
+  card.addEventListener('mouseleave', () => { card.style.transform=''; });
+});
+
+/* ─── PROJECT FILTER ─── */
+document.querySelectorAll('.pf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pf-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const f = btn.dataset.f;
+    document.querySelectorAll('.proj-card').forEach(c => {
+      const cat = c.dataset.cat || '';
+      if(f==='all' || cat.includes(f)){
+        c.style.display='';
+        setTimeout(()=>{c.style.opacity='1';c.style.transform='';},30);
+      } else {
+        c.style.opacity='0';c.style.transform='scale(0.85)';
+        setTimeout(()=>{c.style.display='none';},380);
+      }
+    });
+  });
+});
+
+/* ─── MAGNETIC BUTTONS ─── */
+document.querySelectorAll('.btn-fill,.btn-outline,.btn-cv,.nav-cta').forEach(b => {
+  b.addEventListener('mousemove', e => {
+    const r=b.getBoundingClientRect();
+    const dx=e.clientX-(r.left+r.width/2);
+    const dy=e.clientY-(r.top+r.height/2);
+    b.style.transform=`translate(${dx*0.18}px,${dy*0.18}px)`;
+  });
+  b.addEventListener('mouseleave', () => { b.style.transform=''; });
+});
+
+/* ─── PARALLAX HERO ─── */
+window.addEventListener('scroll', () => {
+  const hc = document.querySelector('.hero-content');
+  if (hc && window.scrollY < window.innerHeight) {
+    hc.style.transform = `translateY(${window.scrollY*0.28}px)`;
+    hc.style.opacity   = 1 - window.scrollY/window.innerHeight*1.2;
+  }
+},{passive:true});
+
+/* ─── FORM ─── */
+function handleForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('fs-text');
+  btn.textContent = 'Sending…';
+  setTimeout(()=>{ btn.textContent='✓ Sent!'; e.target.reset(); setTimeout(()=>{btn.textContent='Send Message →';},4000); },1600);
+}
+</script>
+</body>
+</html>
